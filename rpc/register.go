@@ -2,8 +2,7 @@ package rpc
 
 import (
 	"fmt"
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,15 +17,15 @@ import (
 	"github.com/spf13/viper"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	terra "github.com/terra-money/alliance/app"
 	mconfig "github.com/terra-money/mantlemint/config"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 )
 
 func StartRPC(
-	app *cosmoscmd.App,
+	app *baseApp.App,
 	rpcclient rpcclient.Client,
 	chainId string,
-	encodingConfig cosmoscmd.EncodingConfig,
+	encodingConfig baseApp.EncodingConfig,
 	invalidateTrigger chan int64,
 	registerCustomRoutes func(router *mux.Router),
 	getIsSynced func() bool,
@@ -34,7 +33,7 @@ func StartRPC(
 ) error {
 	vp := viper.GetViper()
 	cfg, _ := config.GetConfig(vp)
-	// create terra client; register all codecs
+	// create client; register all codecs
 	context := client.
 		Context{}.
 		WithClient(rpcclient).
@@ -43,7 +42,7 @@ func StartRPC(
 		WithTxConfig(encodingConfig.TxConfig).
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithLegacyAmino(encodingConfig.Amino).
-		WithHomeDir(terra.DefaultNodeHome).
+		WithHomeDir(mantlemintConfig.Home).
 		WithChainID(chainId)
 
 	// create backends for response cache
@@ -67,7 +66,7 @@ func StartRPC(
 	}()
 
 	// start new api server
-	apiSrv := api.New(context, tmlog.NewTMLogger(ioutil.Discard))
+	apiSrv := api.New(context, tmlog.NewTMLogger(io.Discard))
 
 	// register custom routes to default api server
 	registerCustomRoutes(apiSrv.Router)

@@ -2,7 +2,6 @@ package indexer
 
 import (
 	"fmt"
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -11,16 +10,17 @@ import (
 	"github.com/terra-money/mantlemint/db/safe_batch"
 	"github.com/terra-money/mantlemint/db/snappy"
 	"github.com/terra-money/mantlemint/mantlemint"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 )
 
 type Indexer struct {
 	db          tmdb.DB
 	indexerTags []string
 	indexers    []IndexFunc
-	app         *cosmoscmd.App
+	app         *baseApp.App
 }
 
-func NewIndexer(dbName, path string, app *cosmoscmd.App) (*Indexer, error) {
+func NewIndexer(dbName, path string, app *baseApp.App) (*Indexer, error) {
 	indexerDB, indexerDBError := tmdb.NewGoLevelDB(dbName, path)
 	if indexerDBError != nil {
 		return nil, indexerDBError

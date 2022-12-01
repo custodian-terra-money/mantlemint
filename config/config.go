@@ -44,7 +44,7 @@ func newConfig() Config {
 		// GenesisPath sets the location of genesis
 		GenesisPath: getValidEnv("GENESIS_PATH"),
 
-		// Home sets where the default terra home is.
+		// Home sets where the default mantlemint home is.
 		Home: getValidEnv("MANTLEMINT_HOME"),
 
 		// ChainID sets expected chain id for this mantlemint instance

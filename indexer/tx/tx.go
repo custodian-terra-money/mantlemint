@@ -3,19 +3,18 @@ package tx
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tm "github.com/tendermint/tendermint/types"
-	terra "github.com/terra-money/alliance/app"
 	"github.com/terra-money/mantlemint/db/safe_batch"
 	"github.com/terra-money/mantlemint/indexer"
 	"github.com/terra-money/mantlemint/mantlemint"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 )
 
-var cdc = cosmoscmd.MakeEncodingConfig(terra.ModuleBasics)
+var cdc = baseApp.MakeEncodingConfig()
 
-var IndexTx = indexer.CreateIndexer(func(batch safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, _ *cosmoscmd.App) error {
+var IndexTx = indexer.CreateIndexer(func(batch safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, _ *baseApp.App) error {
 	// encoder; proto -> mem -> json
 	txDecoder := cdc.TxConfig.TxDecoder()
 	jsonEncoder := cdc.TxConfig.TxJSONEncoder()

@@ -3,15 +3,13 @@ package richlist
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
-	terra "github.com/terra-money/alliance/app"
 	"sync"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/google/btree"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/terra-money/mantlemint/lib"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 )
 
 // keys for storage
@@ -183,10 +181,10 @@ func (list *Richlist) Extract(height uint64, len int, threshold *sdk.Coin) (extr
 	return
 }
 
-func (list *Richlist) Apply(changes map[string]sdk.Int, capp *cosmoscmd.App, height uint64, denom string) (err error) {
-	app, ok := (*capp).(*terra.App)
+func (list *Richlist) Apply(changes map[string]sdk.Int, capp *baseApp.App, height uint64, denom string) (err error) {
+	app, ok := (*capp).(*baseApp.SimApp)
 	if !ok {
-		return fmt.Errorf("invalid app expect: %T got %T", terra.App{}, capp)
+		return fmt.Errorf("invalid app expect: %T got %T", baseApp.SimApp{}, capp)
 	}
 	ctx := app.NewContext(true, tmproto.Header{})
 

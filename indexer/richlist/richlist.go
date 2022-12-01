@@ -3,18 +3,18 @@ package richlist
 import (
 	"encoding/json"
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
+
 	abci "github.com/tendermint/tendermint/abci/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tm "github.com/tendermint/tendermint/types"
-	terra "github.com/terra-money/alliance/app"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/terra-money/mantlemint/config"
 	"github.com/terra-money/mantlemint/db/safe_batch"
 	"github.com/terra-money/mantlemint/indexer"
 	"github.com/terra-money/mantlemint/mantlemint"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 )
 
 const (
@@ -36,8 +36,9 @@ var cfg = config.GetConfig()
 // for now, we only handle a richlist for LUNA
 var richlist = NewRichlist(0, cfg.RichlistThreshold)
 
-var IndexRichlist = indexer.CreateIndexer(func(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, app *cosmoscmd.App) (err error) {
+var IndexRichlist = indexer.CreateIndexer(func(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, app *baseApp.App) (err error) {
 	height := uint64(block.Height)
+
 	// skip if this indexer is disabled or at genesis height. genesis block cannot be parsed here.
 	if cfg.RichlistLength == 0 || height == 1 {
 		// nop
@@ -107,12 +108,9 @@ var IndexRichlist = indexer.CreateIndexer(func(indexerDB safe_batch.SafeBatchDB,
 	return indexerDB.Set(getDefaultKey(height), richlistJSON)
 })
 
-func generateRichlistFromState(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, capp *cosmoscmd.App, height uint64, threshold sdk.Coin) (list *Richlist, err error) {
-	app, ok := (*capp).(*terra.App)
-	if !ok {
-		return nil, fmt.Errorf("invalid app expect: %T got %T", terra.App{}, capp)
-	}
+func generateRichlistFromState(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockID *tm.BlockID, evc *mantlemint.EventCollector, app *baseApp.App, height uint64, threshold sdk.Coin) (list *Richlist, err error) {
 	list = NewRichlist(height, &threshold)
+
 	ctx := app.NewContext(true, tmproto.Header{Height: int64(height)})
 
 	app.AccountKeeper.IterateAccounts(ctx, func(account authtypes.AccountI) (stop bool) {

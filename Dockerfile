@@ -25,6 +25,10 @@ RUN set -eux &&\
     make -j$(nproc) &&\
     make install
 
+RUN set -eux &&\
+    cd src/mantlemint &&\
+    go get -v ./...
+
 # force it to use static lib (from above) not standard libgo_cosmwasm.so file
 RUN set -eux &&\
     cd src/mantlemint &&\
@@ -34,19 +38,37 @@ RUN set -eux &&\
     -mod=readonly \
     -ldflags="-extldflags '-L/go/src/mimalloc/build -lmimalloc -static'" \
     -o /go/bin/mantlemint \
-    ./sync.go
+    ./main.go
 
 ###############################################################################
 FROM alpine:3.14
 
-WORKDIR /root
+WORKDIR /app
 
 COPY --from=go-builder /go/bin/mantlemint /usr/local/bin/mantlemint
+COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN apk add bash
+RUN chmod 755 /usr/local/bin/entrypoint.sh && \
+    apk add bash
+
+ENV CHAIN_ID="localterra" \
+    MANTLEMINT_HOME="/app" \
+    ## db paths relative to MANTLEMINT_HOME
+    INDEXER_DB="/data/indexer" \
+    MANTLEMINT_HOME="/data/mantlemint" \
+    MANTLEMINT_DB="/app/config/genesis.json" \
+    DISABLE_SYNC="false" \
+    RUST_BACKTRACE="full" \
+    ENABLE_EXPORT_MODULE="false" \
+    RICHLIST_LENGTH="100" \
+    RICHLIST_THRESHOLD="0uluna" \
+    ACCOUNT_ADDRESS_PREFIX="terra" \
+    BOND_DENOM="uluna" \
+    RPC_ENDPOINTS="http://localhost:26657" \
+    WS_ENDPOINTS="ws://localhost:26657/websocket"
 
 # lcd & grpc ports
-EXPOSE 1317
-EXPOSE 9090
+EXPOSE 1317 9090
 
-CMD ["/usr/local/bin/mantlemint"]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+CMD [ "/usr/local/bin/mantlemint" ]

@@ -1,7 +1,7 @@
 package indexer
 
 import (
-	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
+	baseApp "github.com/cosmos/cosmos-sdk/simapp"
 	"log"
 	"net/http"
 	"runtime"
@@ -13,7 +13,7 @@ import (
 	"github.com/terra-money/mantlemint/mantlemint"
 )
 
-type IndexFunc func(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockId *tm.BlockID, evc *mantlemint.EventCollector, app *cosmoscmd.App) error
+type IndexFunc func(indexerDB safe_batch.SafeBatchDB, block *tm.Block, blockId *tm.BlockID, evc *mantlemint.EventCollector, app *baseApp.App) error
 type ClientHandler func(w http.ResponseWriter, r *http.Request) error
 type RESTRouteRegisterer func(router *mux.Router, indexerDB tmdb.DB)
 
